@@ -9,7 +9,7 @@ export interface ApiProduct {
   description: string; // Описание товара
   image: string; // Ссылка на изображение товара
   category: string; // Категория товара
-  price: number; // Цена товара
+  price: number | null; // Цена товара может быть null
 }
 
 /**
@@ -134,4 +134,165 @@ export interface IFormState {
 export interface IUserContacts {
   email: string; // Email пользователя
   phone: string; // Телефон пользователя
+}
+
+/**
+ * Представление карточки товара (Card)
+ * Отвечает за отображение информации о товаре и взаимодействие с корзиной
+ */
+export interface ICardView {
+  /** Конструктор принимает данные товара и флаг наличия в корзине */
+  new (product: ViewProduct, inBasket: boolean): ICardView;
+  /** Данные товара */
+  product: ViewProduct;
+  /** true, если товар в корзине */
+  inBasket: boolean;
+  /** Отрисовать карточку товара */
+  render(): void;
+  /** Обновить состояние (например, кнопка "В корзину") */
+  update(inBasket: boolean): void;
+}
+
+/**
+ * Представление корзины (Basket)
+ * Показывает список выбранных товаров и сумму заказа
+ */
+export interface IBasketView {
+  /** Конструктор принимает список товаров и сумму */
+  new (items: ViewProduct[], total: number): IBasketView;
+  /** Список товаров в корзине */
+  items: ViewProduct[];
+  /** Итоговая сумма */
+  total: number;
+  /** Отрисовать корзину */
+  render(): void;
+  /** Обновить список товаров */
+  update(items: ViewProduct[], total: number): void;
+}
+
+/**
+ * Модальное окно (Modal)
+ * Для отображения подробной информации или оформления заказа
+ */
+export interface IModalView {
+  /** Конструктор принимает содержимое для отображения */
+  new (content: HTMLElement): IModalView;
+  /** Показать модальное окно */
+  show(): void;
+  /** Скрыть модальное окно */
+  hide(): void;
+  /** Задать новое содержимое */
+  setContent(content: HTMLElement): void;
+}
+
+/**
+ * Базовое представление формы (FormView)
+ * Для наследования конкретными формами заказа и контактов
+ */
+export interface IFormView {
+  /** Конструктор принимает callback для отправки формы */
+  new (onSubmit: (data: object) => void): IFormView;
+  /** Отрисовать форму */
+  render(): void;
+  /** Получить данные формы */
+  getData(): object;
+  /** Показать ошибки */
+  showErrors(errors: string[]): void;
+  /** Очистить форму */
+  reset(): void;
+}
+
+/**
+ * Представление формы заказа (OrderFormView)
+ * Для ввода адреса и способа оплаты
+ */
+export interface IOrderFormView extends IFormView {
+  /** Получить данные формы заказа */
+  getData(): { address: string; payment: string };
+}
+
+/**
+ * Представление формы контактов (ContactsFormView)
+ * Для ввода email и телефона
+ */
+export interface IContactsFormView extends IFormView {
+  /** Получить данные формы контактов */
+  getData(): { email: string; phone: string };
+}
+
+/**
+ * Представление успешного заказа (OrderSuccessView)
+ * Показывает сообщение об успешном оформлении заказа
+ */
+export interface IOrderSuccessView {
+  /** Конструктор принимает сумму заказа и callback для закрытия */
+  new (total: number, onClose: () => void): IOrderSuccessView;
+  /** Отрисовать сообщение об успехе */
+  render(): void;
+  /** Закрыть сообщение */
+  close(): void;
+}
+
+/**
+ * Модель товаров (ProductModel)
+ * Хранит и управляет списком товаров
+ */
+export interface IProductModel {
+  /** Конструктор принимает массив товаров */
+  new (products: ApiProduct[]): IProductModel;
+  /** Список всех товаров */
+  products: ApiProduct[];
+  /** Получить товар по id */
+  getProductById(id: string): ApiProduct | undefined;
+}
+
+/**
+ * Модель корзины (BasketModel)
+ * Хранит id товаров в корзине и управляет ими
+ */
+export interface IBasketModel {
+  /** Конструктор принимает массив id товаров */
+  new (items: string[]): IBasketModel;
+  /** Массив id товаров в корзине */
+  items: string[];
+  /** Добавить товар в корзину */
+  add(id: string): void;
+  /** Удалить товар из корзины */
+  remove(id: string): void;
+  /** Очистить корзину */
+  clear(): void;
+}
+
+/**
+ * Модель заказа (OrderModel)
+ * Хранит данные текущего заказа
+ */
+export interface IOrderModel {
+  /** Конструктор принимает данные заказа */
+  new (order: ApiOrder): IOrderModel;
+  /** Данные заказа */
+  order: ApiOrder;
+  /** Установить адрес */
+  setAddress(address: string): void;
+  /** Установить способ оплаты */
+  setPayment(payment: string): void;
+  /** Получить итоговую сумму */
+  getTotal(products: ApiProduct[]): number;
+}
+
+/**
+ * Модель пользователя (UserModel)
+ * Хранит контактные данные пользователя
+ */
+export interface IUserModel {
+  /** Конструктор принимает email и телефон */
+  new (contacts: IUserContacts): IUserModel;
+  /** Email пользователя */
+  email: string;
+  /** Телефон пользователя */
+  phone: string;
+  /** Установить email */
+  setEmail(email: string): void;
+  /** Установить телефон */
+  setPhone(phone: string): void;
 }
