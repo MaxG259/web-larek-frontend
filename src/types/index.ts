@@ -2,31 +2,45 @@
 
 /**
  * Описывает товар, который приходит с сервера через API
+ * @interface ApiProduct
+ * @property {string} id - Уникальный идентификатор товара
+ * @property {string} title - Название товара
+ * @property {string} description - Описание товара
+ * @property {string} image - Ссылка на изображение товара
+ * @property {string} category - Категория товара
+ * @property {number | null} price - Цена товара (может быть null)
  */
 export interface ApiProduct {
-  id: string; // Уникальный идентификатор товара
-  title: string; // Название товара
-  description: string; // Описание товара
-  image: string; // Ссылка на изображение товара
-  category: string; // Категория товара
-  price: number | null; // Цена товара может быть null
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  price: number | null;
 }
 
 /**
  * Описывает заказ, который отправляется на сервер
+ * @interface ApiOrder
+ * @property {string[]} items - Массив id товаров, которые заказывает пользователь
+ * @property {string} address - Адрес доставки
+ * @property {string} payment - Способ оплаты
  */
 export interface ApiOrder {
-  items: string[]; // Массив id товаров, которые заказывает пользователь
-  address: string; // Адрес доставки
-  payment: string; // Способ оплаты
+  items: string[];
+  address: string;
+  payment: string;
 }
 
 /**
  * Описывает ответ сервера после оформления заказа
+ * @interface ApiOrderResponse
+ * @property {string} id - Уникальный номер заказа
+ * @property {number} total - Итоговая сумма заказа
  */
 export interface ApiOrderResponse {
-  id: string; // Уникальный номер заказа
-  total: number; // Итоговая сумма заказа
+  id: string;
+  total: number;
 }
 
 // Типы для отображения на экране
@@ -34,26 +48,33 @@ export interface ApiOrderResponse {
 /**
  * Описывает, как товар будет отображаться на экране
  * Может содержать дополнительные поля, например, inBasket
+ * @interface ViewProduct
+ * @property {string} id
+ * @property {string} title
+ * @property {string} image
+ * @property {number} price
+ * @property {boolean} inBasket - true, если товар уже в корзине
  */
 export interface ViewProduct {
   id: string;
   title: string;
   image: string;
   price: number;
-  inBasket: boolean; // true, если товар уже в корзине
+  inBasket: boolean;
 }
 
 // Интерфейс API-клиента
 
 /**
  * Описывает методы для работы с сервером (API)
+ * @interface IApiClient
+ * @method getProducts - Получить список всех товаров
+ * @method getProduct - Получить один товар по id
+ * @method createOrder - Создать заказ
  */
 export interface IApiClient {
-  /** Получить список всех товаров */
   getProducts(): Promise<ApiProduct[]>;
-  /** Получить один товар по id */
   getProduct(id: string): Promise<ApiProduct>;
-  /** Создать заказ */
   createOrder(order: ApiOrder): Promise<ApiOrderResponse>;
 }
 
@@ -61,13 +82,16 @@ export interface IApiClient {
 
 /**
  * Описывает структуру и методы модели данных приложения
+ * @interface IModel
+ * @property {ApiProduct[]} products - Список всех товаров
+ * @property {string[]} basket - Массив id товаров, добавленных в корзину
+ * @method addToBasket - Добавить товар в корзину
+ * @method removeFromBasket - Удалить товар из корзины
  */
 export interface IModel {
-  products: ApiProduct[]; // Список всех товаров
-  basket: string[]; // Массив id товаров, добавленных в корзину
-  /** Добавить товар в корзину */
+  products: ApiProduct[];
+  basket: string[];
   addToBasket(id: string): void;
-  /** Удалить товар из корзины */
   removeFromBasket(id: string): void;
 }
 
@@ -75,11 +99,12 @@ export interface IModel {
 
 /**
  * Описывает методы для отображения данных на экране
+ * @interface IView
+ * @method render - Отрисовать список товаров
+ * @method showProduct - Показать подробную информацию о товаре
  */
 export interface IView {
-  /** Отрисовать список товаров */
   render(products: ViewProduct[]): void;
-  /** Показать подробную информацию о товаре */
   showProduct(product: ViewProduct): void;
 }
 
@@ -87,34 +112,41 @@ export interface IView {
 
 /**
  * Список возможных событий в приложении
+ * @typedef {('product:add'|'product:remove'|'basket:open'|'order:submit')} AppEvent
  */
 export type AppEvent =
-  | 'product:add'      // Добавление товара в корзину
-  | 'product:remove'   // Удаление товара из корзины
-  | 'basket:open'      // Открытие корзины
-  | 'order:submit';    // Оформление заказа
+  | 'product:add'
+  | 'product:remove'
+  | 'basket:open'
+  | 'order:submit';
 
 /**
  * Описывает структуру данных (payload), которые передаются с каждым событием
+ * @interface IEventPayloads
+ * @property {{id: string}} 'product:add' - id добавленного товара
+ * @property {{id: string}} 'product:remove' - id удалённого товара
+ * @property {undefined} 'basket:open' - нет данных, просто открытие корзины
+ * @property {{order: ApiOrder}} 'order:submit' - данные заказа
  */
 export interface IEventPayloads {
-  'product:add': { id: string }; // id добавленного товара
-  'product:remove': { id: string }; // id удалённого товара
-  'basket:open': undefined; // нет данных, просто открытие корзины
-  'order:submit': { order: ApiOrder }; // данные заказа
+  'product:add': { id: string };
+  'product:remove': { id: string };
+  'basket:open': undefined;
+  'order:submit': { order: ApiOrder };
 }
 
 // Интерфейсы базовых классов
 
 /**
  * Базовый интерфейс для всех UI-компонентов
+ * @interface IComponent
+ * @method render - Отрисовать компонент
+ * @method show - Показать компонент
+ * @method hide - Скрыть компонент
  */
 export interface IComponent {
-  /** Отрисовать компонент */
   render(): void;
-  /** Показать компонент */
   show(): void;
-  /** Скрыть компонент */
   hide(): void;
 }
 
@@ -122,177 +154,185 @@ export interface IComponent {
 
 /**
  * Описывает состояние формы (валидность и ошибки)
+ * @interface IFormState
+ * @property {boolean} valid - true, если форма заполнена правильно
+ * @property {string[]} errors - список ошибок, если есть
  */
 export interface IFormState {
-  valid: boolean; // true, если форма заполнена правильно
-  errors: string[]; // список ошибок, если есть
+  valid: boolean;
+  errors: string[];
 }
 
 /**
  * Описывает контактные данные пользователя
+ * @interface IUserContacts
+ * @property {string} email - Email пользователя
+ * @property {string} phone - Телефон пользователя
  */
 export interface IUserContacts {
-  email: string; // Email пользователя
-  phone: string; // Телефон пользователя
+  email: string;
+  phone: string;
 }
 
 /**
  * Представление карточки товара (Card)
- * Отвечает за отображение информации о товаре и взаимодействие с корзиной
+ * @interface ICardView
+ * @constructor (product: ViewProduct, inBasket: boolean)
+ * @property {ViewProduct} product - Данные товара
+ * @property {boolean} inBasket - true, если товар в корзине
+ * @method render - Отрисовать карточку товара
+ * @method update - Обновить состояние (например, кнопка "В корзину")
  */
 export interface ICardView {
-  /** Конструктор принимает данные товара и флаг наличия в корзине */
   new (product: ViewProduct, inBasket: boolean): ICardView;
-  /** Данные товара */
   product: ViewProduct;
-  /** true, если товар в корзине */
   inBasket: boolean;
-  /** Отрисовать карточку товара */
   render(): void;
-  /** Обновить состояние (например, кнопка "В корзину") */
   update(inBasket: boolean): void;
 }
 
 /**
- * Представление корзины (Basket)
- * Показывает список выбранных товаров и сумму заказа
+ * Представление корзины (BasketView)
+ * @interface IBasketView
+ * @constructor (items: ViewProduct[], total: number)
+ * @property {ViewProduct[]} items - Список товаров в корзине
+ * @property {number} total - Итоговая сумма
+ * @method render - Отрисовать корзину
+ * @method update - Обновить список товаров
  */
 export interface IBasketView {
-  /** Конструктор принимает список товаров и сумму */
   new (items: ViewProduct[], total: number): IBasketView;
-  /** Список товаров в корзине */
   items: ViewProduct[];
-  /** Итоговая сумма */
   total: number;
-  /** Отрисовать корзину */
   render(): void;
-  /** Обновить список товаров */
   update(items: ViewProduct[], total: number): void;
 }
 
 /**
  * Модальное окно (Modal)
- * Для отображения подробной информации или оформления заказа
+ * @interface IModalView
+ * @constructor (content: HTMLElement)
+ * @method show - Показать модальное окно
+ * @method hide - Скрыть модальное окно
+ * @method setContent - Задать новое содержимое
  */
 export interface IModalView {
-  /** Конструктор принимает содержимое для отображения */
   new (content: HTMLElement): IModalView;
-  /** Показать модальное окно */
   show(): void;
-  /** Скрыть модальное окно */
   hide(): void;
-  /** Задать новое содержимое */
   setContent(content: HTMLElement): void;
 }
 
 /**
  * Базовое представление формы (FormView)
- * Для наследования конкретными формами заказа и контактов
+ * @interface IFormView
+ * @constructor (onSubmit: (data: object) => void)
+ * @method render - Отрисовать форму
+ * @method getData - Получить данные формы
+ * @method showErrors - Показать ошибки
+ * @method reset - Очистить форму
  */
 export interface IFormView {
-  /** Конструктор принимает callback для отправки формы */
   new (onSubmit: (data: object) => void): IFormView;
-  /** Отрисовать форму */
   render(): void;
-  /** Получить данные формы */
   getData(): object;
-  /** Показать ошибки */
   showErrors(errors: string[]): void;
-  /** Очистить форму */
   reset(): void;
 }
 
 /**
  * Представление формы заказа (OrderFormView)
- * Для ввода адреса и способа оплаты
+ * @interface IOrderFormView
+ * @extends IFormView
+ * @method getData - Получить данные формы заказа
  */
 export interface IOrderFormView extends IFormView {
-  /** Получить данные формы заказа */
   getData(): { address: string; payment: string };
 }
 
 /**
  * Представление формы контактов (ContactsFormView)
- * Для ввода email и телефона
+ * @interface IContactsFormView
+ * @extends IFormView
+ * @method getData - Получить данные формы контактов
  */
 export interface IContactsFormView extends IFormView {
-  /** Получить данные формы контактов */
   getData(): { email: string; phone: string };
 }
 
 /**
  * Представление успешного заказа (OrderSuccessView)
- * Показывает сообщение об успешном оформлении заказа
+ * @interface IOrderSuccessView
+ * @constructor (total: number, onClose: () => void)
+ * @method render - Отрисовать сообщение об успехе
+ * @method close - Закрыть сообщение
  */
 export interface IOrderSuccessView {
-  /** Конструктор принимает сумму заказа и callback для закрытия */
   new (total: number, onClose: () => void): IOrderSuccessView;
-  /** Отрисовать сообщение об успехе */
   render(): void;
-  /** Закрыть сообщение */
   close(): void;
 }
 
 /**
  * Модель товаров (ProductModel)
- * Хранит и управляет списком товаров
+ * @interface IProductModel
+ * @constructor (products: ApiProduct[])
+ * @property {ApiProduct[]} products - Список всех товаров
+ * @method getProductById - Получить товар по id
  */
 export interface IProductModel {
-  /** Конструктор принимает массив товаров */
   new (products: ApiProduct[]): IProductModel;
-  /** Список всех товаров */
   products: ApiProduct[];
-  /** Получить товар по id */
   getProductById(id: string): ApiProduct | undefined;
 }
 
 /**
  * Модель корзины (BasketModel)
- * Хранит id товаров в корзине и управляет ими
+ * @interface IBasketModel
+ * @constructor (items: string[])
+ * @property {string[]} items - Массив id товаров в корзине
+ * @method add - Добавить товар в корзину
+ * @method remove - Удалить товар из корзины
+ * @method clear - Очистить корзину
  */
 export interface IBasketModel {
-  /** Конструктор принимает массив id товаров */
   new (items: string[]): IBasketModel;
-  /** Массив id товаров в корзине */
   items: string[];
-  /** Добавить товар в корзину */
   add(id: string): void;
-  /** Удалить товар из корзины */
   remove(id: string): void;
-  /** Очистить корзину */
   clear(): void;
 }
 
 /**
  * Модель заказа (OrderModel)
- * Хранит данные текущего заказа
+ * @interface IOrderModel
+ * @constructor (order: ApiOrder)
+ * @property {ApiOrder} order - Данные заказа
+ * @method setAddress - Установить адрес
+ * @method setPayment - Установить способ оплаты
+ * @method getTotal - Получить итоговую сумму
  */
 export interface IOrderModel {
-  /** Конструктор принимает данные заказа */
   new (order: ApiOrder): IOrderModel;
-  /** Данные заказа */
   order: ApiOrder;
-  /** Установить адрес */
   setAddress(address: string): void;
-  /** Установить способ оплаты */
   setPayment(payment: string): void;
-  /** Получить итоговую сумму */
   getTotal(products: ApiProduct[]): number;
 }
 
 /**
  * Модель пользователя (UserModel)
- * Хранит контактные данные пользователя
+ * @interface IUserModel
+ * @constructor (contacts: IUserContacts)
+ * @property {string} email - Email пользователя
+ * @property {string} phone - Телефон пользователя
+ * @method setEmail - Установить email
+ * @method setPhone - Установить телефон
  */
 export interface IUserModel {
-  /** Конструктор принимает email и телефон */
   new (contacts: IUserContacts): IUserModel;
-  /** Email пользователя */
   email: string;
-  /** Телефон пользователя */
   phone: string;
-  /** Установить email */
   setEmail(email: string): void;
-  /** Установить телефон */
   setPhone(phone: string): void;
 }
