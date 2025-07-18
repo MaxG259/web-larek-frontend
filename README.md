@@ -39,7 +39,7 @@
 
 ## Основные компоненты
 
-- **Card** — отображает товар, позволяет добавить или убрать его из корзины.
+- **PageView** — отображает список товаров на главной странице (каталоге).
 - **BasketView** — показывает список выбранных товаров и сумму заказа.
 - **Modal** — модальное окно для подробной информации о товаре или оформления заказа.
 - **OrderFormView** — форма для ввода данных заказа (адрес и способ оплаты).
@@ -90,34 +90,41 @@
 
 ---
 
+## PageView
+**Конструктор:**
+`constructor(container: HTMLElement)`
+
+**Методы:**
+- `render(items: IProductItemView[]): void` — отрисовать список товаров на главной странице
+
+---
+
+## ProductItemView
+**Поля:**
+- `id: string` — id товара
+
+**Методы:**
+- `render(): void` — отрисовать карточку товара
+
+---
+
 ## BasketView
 **Конструктор:**
 `constructor(container: HTMLElement)`
 
-**Поля:**
-- `_list: HTMLElement` — список товаров
-- `_total: number` — общая сумма
-- `_button: HTMLElement` — кнопка "Оформить заказ"
-
 **Методы:**
+- `render(items: IBasketItemView[]): void` — отрисовать список товаров в корзине
 - `toggleButton(enabled: boolean): void` — включить/выключить кнопку оформления заказа
-- `setItems(items: ICardProduct[]): void` — обновить список товаров в корзине
 - `setTotal(total: number): void` — задать общую сумму заказа
 
 ---
 
-## Modal
-**Конструктор:**
-`constructor(container: HTMLElement)`
-
+## BasketItemView
 **Поля:**
-- `_content: HTMLElement` — содержимое модального окна
+- `id: string` — id товара
 
 **Методы:**
-- `setContent(content: HTMLElement): void` — задать содержимое модального окна
-- `open(): void` — открыть модальное окно
-- `close(): void` — закрыть модальное окно
-- `render(): void` — отрисовать модальное окно
+- `render(): void` — отрисовать товар в корзине
 
 ---
 
@@ -130,9 +137,7 @@
 - `payment: string` — способ оплаты
 
 **Методы:**
-- `setAddress(address: string): void` — установить адрес
-- `setPayment(payment: string): void` — установить способ оплаты
-- `getData(): { address: string; payment: string }` — получить данные формы заказа
+- `showErrors(errors: string[]): void` — показать ошибки валидации
 - `render(): void` — отрисовать форму заказа
 
 ---
@@ -146,9 +151,7 @@
 - `phone: string` — телефон пользователя
 
 **Методы:**
-- `setEmail(email: string): void` — установить email
-- `setPhone(phone: string): void` — установить телефон
-- `getData(): { email: string; phone: string }` — получить данные формы контактов
+- `showErrors(errors: string[]): void` — показать ошибки валидации
 - `render(): void` — отрисовать форму контактов
 
 ---

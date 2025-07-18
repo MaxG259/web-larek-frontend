@@ -192,20 +192,47 @@ export interface ICardView {
 }
 
 /**
+ * Представление одного товара в каталоге (ProductItemView)
+ * @interface IProductItemView
+ * @property {string} id - id товара
+ * @method render - Отрисовать карточку товара
+ */
+export interface IProductItemView {
+  id: string;
+  render(): void;
+}
+
+/**
+ * Представление одного товара в корзине (BasketItemView)
+ * @interface IBasketItemView
+ * @property {string} id - id товара
+ * @method render - Отрисовать товар в корзине
+ */
+export interface IBasketItemView {
+  id: string;
+  render(): void;
+}
+
+/**
+ * Представление главной страницы (PageView)
+ * @interface IPageView
+ * @constructor (container: HTMLElement)
+ * @method render - Отрисовать список товаров на главной странице
+ */
+export interface IPageView {
+  render(items: IProductItemView[]): void;
+}
+
+/**
  * Представление корзины (BasketView)
  * @interface IBasketView
- * @constructor (items: ViewProduct[], total: number)
- * @property {ViewProduct[]} items - Список товаров в корзине
- * @property {number} total - Итоговая сумма
- * @method render - Отрисовать корзину
- * @method update - Обновить список товаров
+ * @constructor (container: HTMLElement)
+ * @method render - Отрисовать список товаров в корзине
  */
 export interface IBasketView {
-  new (items: ViewProduct[], total: number): IBasketView;
-  items: ViewProduct[];
-  total: number;
-  render(): void;
-  update(items: ViewProduct[], total: number): void;
+  render(items: IBasketItemView[]): void;
+  toggleButton(enabled: boolean): void;
+  setTotal(total: number): void;
 }
 
 /**
@@ -243,21 +270,23 @@ export interface IFormView {
 /**
  * Представление формы заказа (OrderFormView)
  * @interface IOrderFormView
- * @extends IFormView
- * @method getData - Получить данные формы заказа
+ * @method showErrors - Показать ошибки валидации
+ * @method render - Отрисовать форму заказа
  */
-export interface IOrderFormView extends IFormView {
-  getData(): { address: string; payment: string };
+export interface IOrderFormView {
+  showErrors(errors: string[]): void;
+  render(): void;
 }
 
 /**
  * Представление формы контактов (ContactsFormView)
  * @interface IContactsFormView
- * @extends IFormView
- * @method getData - Получить данные формы контактов
+ * @method showErrors - Показать ошибки валидации
+ * @method render - Отрисовать форму контактов
  */
-export interface IContactsFormView extends IFormView {
-  getData(): { email: string; phone: string };
+export interface IContactsFormView {
+  showErrors(errors: string[]): void;
+  render(): void;
 }
 
 /**
