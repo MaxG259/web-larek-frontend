@@ -96,7 +96,6 @@
 
 **Методы:**
 - `render(items: IProductItemView[]): void` — отрисовать список товаров на главной странице
-
 ---
 
 ## ProductItemView

@@ -2,7 +2,7 @@
 
 /**
  * Описывает товар, который приходит с сервера через API
- * @interface ApiProduct
+ * @interface IProduct
  * @property {string} id - Уникальный идентификатор товара
  * @property {string} title - Название товара
  * @property {string} description - Описание товара
@@ -10,7 +10,7 @@
  * @property {string} category - Категория товара
  * @property {number | null} price - Цена товара (может быть null)
  */
-export interface ApiProduct {
+export interface IProduct {
   id: string;
   title: string;
   description: string;
@@ -73,8 +73,8 @@ export interface ViewProduct {
  * @method createOrder - Создать заказ
  */
 export interface IApiClient {
-  getProducts(): Promise<ApiProduct[]>;
-  getProduct(id: string): Promise<ApiProduct>;
+  getProducts(): Promise<IProduct[]>;
+  getProduct(id: string): Promise<IProduct>;
   createOrder(order: ApiOrder): Promise<ApiOrderResponse>;
 }
 
@@ -83,13 +83,13 @@ export interface IApiClient {
 /**
  * Описывает структуру и методы модели данных приложения
  * @interface IModel
- * @property {ApiProduct[]} products - Список всех товаров
+ * @property {IProduct[]} products - Список всех товаров
  * @property {string[]} basket - Массив id товаров, добавленных в корзину
  * @method addToBasket - Добавить товар в корзину
  * @method removeFromBasket - Удалить товар из корзины
  */
 export interface IModel {
-  products: ApiProduct[];
+  products: IProduct[];
   basket: string[];
   addToBasket(id: string): void;
   removeFromBasket(id: string): void;
@@ -305,14 +305,14 @@ export interface IOrderSuccessView {
 /**
  * Модель товаров (ProductModel)
  * @interface IProductModel
- * @constructor (products: ApiProduct[])
- * @property {ApiProduct[]} products - Список всех товаров
+ * @constructor (products: IProduct[])
+ * @property {IProduct[]} products - Список всех товаров
  * @method getProductById - Получить товар по id
  */
 export interface IProductModel {
-  new (products: ApiProduct[]): IProductModel;
-  products: ApiProduct[];
-  getProductById(id: string): ApiProduct | undefined;
+  new (products: IProduct[]): IProductModel;
+  products: IProduct[];
+  getProductById(id: string): IProduct | undefined;
 }
 
 /**
@@ -346,7 +346,7 @@ export interface IOrderModel {
   order: ApiOrder;
   setAddress(address: string): void;
   setPayment(payment: string): void;
-  getTotal(products: ApiProduct[]): number;
+  getTotal(products: IProduct[]): number;
 }
 
 /**
