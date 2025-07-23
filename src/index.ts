@@ -2,7 +2,7 @@ import './scss/styles.scss';
 import { Api } from './components/base/api';
 import { API_URL, CDN_URL } from './utils/constants';
 import { ProductCardView } from './components/ProductCardView';
-import { IProduct } from './types';
+import { IProduct, IOrderFormSubmitData, IProductDetailViewRenderResult, IOrderFormViewRenderResult } from './types'; // Импорт новых типов
 import { ProductDetailView } from './components/ProductDetailView';
 import { BasketModel } from './models/BasketModel';
 import { BasketView } from './components/BasketView';
@@ -27,13 +27,15 @@ function setScreen(state: ScreenState, data?: any) {
 
   switch (state) {
     case 'main':
-      // Главная страница
+      // Главная страница, ничего не делаем (если всё через JS)
       break;
     case 'modal-product': {
       const { product } = data;
       const inBasket = basketModel.has(product.id);
       const detailView = new ProductDetailView(product);
-      const { card, button } = detailView.render(inBasket);
+      // Уточнение типа возвращаемого значения
+      const renderResult: IProductDetailViewRenderResult = detailView.render(inBasket);
+      const { card, button } = renderResult;
       if (inBasket) {
         button.addEventListener('click', (event) => {
           event.stopPropagation();
@@ -55,11 +57,12 @@ function setScreen(state: ScreenState, data?: any) {
     }
     case 'modal-basket': {
       const products = basketModel.getAll();
+      // Тип onRemove теперь определяется через IRemoveFromBasketCallback (внутри BasketView)
       const basketElement = basketView.render(products, (id) => {
         basketModel.remove(id);
         setScreen('modal-basket');
       });
-      // Кнопка оформления заказа
+      // Находим кнопку оформления заказа
       const orderBtn = basketElement.querySelector('.basket__button');
       if (orderBtn) {
         orderBtn.addEventListener('click', () => {
@@ -73,14 +76,16 @@ function setScreen(state: ScreenState, data?: any) {
     }
     case 'modal-order': {
       const orderFormView = new OrderFormView();
-      const formElement = orderFormView.render((formData) => {
+      // Уточнение типа onSubmit и возвращаемого значения
+      const formRenderResult: IOrderFormViewRenderResult = orderFormView.render((formData: IOrderFormSubmitData) => {
         // Считаем сумму заказа только по товарам с ценой
         const products = basketModel.getAll();
         const total = products.reduce((sum, p) => sum + (p.price || 0), 0);
         setScreen('modal-success', { message: 'Заказ оформлен', total });
         basketModel.clear();
       });
-      modalContent.appendChild(formElement);
+      // Используем wrapper из результата render
+      modalContent.appendChild(formRenderResult.wrapper);
       modal.classList.add('modal_active');
       break;
     }
@@ -120,7 +125,9 @@ function displayProducts(products: IProduct[]): void {
     cardElement.addEventListener('click', () => {
       const inBasket = basketModel.has(product.id);
       const detailView = new ProductDetailView(product);
-      const { card, button } = detailView.render(inBasket);
+      // Уточнение типа возвращаемого значения
+      const renderResult: IProductDetailViewRenderResult = detailView.render(inBasket);
+      const { card, button } = renderResult;
 
       if (inBasket) {
         button.addEventListener('click', (event) => {

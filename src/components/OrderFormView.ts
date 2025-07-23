@@ -3,8 +3,11 @@
  * Многошаговая: сначала адрес и оплата, потом email и телефон (если онлайн).
  * Валидация email и телефона, отображение ошибок.
  */
+
+import { IOrderFormSubmitData, IOrderFormViewRenderResult } from '../types';
+
 export class OrderFormView {
-  render(onSubmit: (formData: { address: string; payment: string; email?: string; phone?: string }) => void): HTMLElement {
+  render(onSubmit: (formData: IOrderFormSubmitData) => void): IOrderFormViewRenderResult {
     // --- Шаг 1: способ оплаты и адрес ---
     const form = document.createElement('form');
     form.className = 'form';
@@ -203,6 +206,6 @@ export class OrderFormView {
     const wrapper = document.createElement('div');
     wrapper.appendChild(form);
     wrapper.appendChild(contactsForm);
-    return wrapper;
+    return { wrapper, form, contactsForm };
   }
 } 

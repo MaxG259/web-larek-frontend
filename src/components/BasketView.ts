@@ -3,10 +3,10 @@
  * Показывает список товаров в корзине, итоговую сумму, кнопку оформления заказа и кнопки удаления товаров.
  * Не хранит данные, только отображает.
  */
-import { IProduct } from '../types';
+import { IProduct, IRemoveFromBasketCallback } from '../types';
 
 export class BasketView {
-  render(products: IProduct[], onRemove: (id: string) => void): HTMLElement {
+  render(products: IProduct[], onRemove: IRemoveFromBasketCallback): HTMLElement {
     const basket = document.createElement('div');
     basket.className = 'basket';
 
