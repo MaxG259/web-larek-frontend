@@ -1,77 +1,80 @@
-/* Это View-компонент */
-/* Его задача отображать модальное окно и вставлять в него любое содержимое */
-/* Он не знает, что именно показывать — только как это показывать */
-/* Отвечает за “как показывать” */
-
-/* Класс для отображения модального окна */
+/**
+ * Компонент для управления модальным окном
+ * Отвечает за открытие, закрытие и управление содержимым модального окна
+ */
 export class ModalView {
-  protected modalElement: HTMLElement; // Корневой элемент модального окна
-  protected contentElement: HTMLElement; // Элемент для вставки содержимого
+  private modal: HTMLElement;
+  private modalContent: HTMLElement;
+  private modalClose: HTMLElement;
 
-  /* Конструктор создаёт DOM-структуру модального окна */
   constructor() {
-    // создаю корневой элемент модального окна
-    this.modalElement = document.createElement('div');
-    this.modalElement.className = 'modal';
+    this.modal = document.querySelector('.modal') as HTMLElement;
+    this.modalContent = this.modal.querySelector('.modal__content') as HTMLElement;
+    this.modalClose = this.modal.querySelector('.modal__close') as HTMLElement;
+    
+    this.setupEventListeners();
+  }
 
-    // создаю элемент для содержимого модального окна
-    this.contentElement = document.createElement('div');
-    this.contentElement.className = 'modal__content';
+  /**
+   * Настраивает обработчики событий для модального окна
+   * Добавляет обработчики для закрытия по крестику, клику вне окна и ESC
+   */
+  private setupEventListeners(): void {
+    // Закрытие по крестику
+    this.modalClose?.addEventListener('click', () => {
+      this.close();
+    });
 
-    // создаю кнопку закрытия модального окна
-    const closeButton = document.createElement('button');
-    closeButton.className = 'modal__close';
-    closeButton.textContent = '×';
-
-    // Добавляю обработчик клика для закрытия модального окна
-    closeButton.addEventListener('click', () => this.close());
-
-    // Собираю структуру модального окна
-    this.modalElement.appendChild(this.contentElement);
-    this.modalElement.appendChild(closeButton);
-
-    // Закрытие по клику вне окна (уже есть)
-    this.modalElement.addEventListener('click', (event) => {
-      if (event.target === this.modalElement) {
+    // Закрытие по клику вне окна
+    this.modal?.addEventListener('click', (event) => {
+      if (event.target === this.modal) {
         this.close();
       }
     });
 
     // Закрытие по ESC
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && this.modalElement.classList.contains('modal_active')) {
+      if (event.key === 'Escape' && this.modal.classList.contains('modal_active')) {
         this.close();
       }
     });
   }
 
   /**
-   * Открывает модальное окно и вставляет содержимое
-   * @param content - HTML-элемент или строка для отображения */
-  open(content: HTMLElement | string): void {
-    // Очищаю предыдущее содержимое
-    this.contentElement.innerHTML = '';
-
-    // Вставляю новое содержимое
-    if (typeof content === 'string') {
-      this.contentElement.innerHTML = content;
-    } else {
-      this.contentElement.appendChild(content);
-    }
-
-    // Добавляю модалку в body, если её ещё нет
-    if (!document.body.contains(this.modalElement)) {
-      document.body.appendChild(this.modalElement);
-    }
-
-    // Делаю модалку видимой
-    this.modalElement.classList.add('modal_active');
+   * Открывает модальное окно
+   */
+  open(): void {
+    this.modal.classList.add('modal_active');
   }
 
   /**
    * Закрывает модальное окно
    */
   close(): void {
-    this.modalElement.classList.remove('modal_active');
+    this.modal.classList.remove('modal_active');
   }
-}
+
+  /**
+   * Очищает содержимое модального окна
+   */
+  clearContent(): void {
+    this.modalContent.innerHTML = '';
+  }
+
+  /**
+   * Устанавливает содержимое модального окна
+   * @param content - HTML-элемент для отображения в модальном окне
+   */
+  setContent(content: HTMLElement): void {
+    this.modalContent.innerHTML = '';
+    this.modalContent.appendChild(content);
+  }
+
+  /**
+   * Проверяет, открыто ли модальное окно
+   * @returns boolean - true если модальное окно открыто
+   */
+  isOpen(): boolean {
+    return this.modal.classList.contains('modal_active');
+  }
+} 

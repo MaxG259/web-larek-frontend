@@ -18,12 +18,41 @@ export interface IBasket {
   has(productId: string): boolean; // Добавлен метод проверки наличия товара
 }
 
-/* Данные формы заказа, передаваемые в OrderFormView при сабмите */
+/** 
+ * Интерфейс для данных формы заказа
+ */
 export interface IOrderFormSubmitData {
   address: string;
   payment: string;
-  email?: string; // Опционально, только для онлайн оплаты
-  phone?: string; // Опционально, только для онлайн оплаты
+}
+
+/** 
+ * Интерфейс для данных формы контактов
+ */
+export interface IContactsFormSubmitData {
+  email: string;
+  phone: string;
+}
+
+/* Данные заказа для OrderModel */
+export interface IOrderData {
+  address: string;
+  payment: string;
+  email?: string;
+  phone?: string;
+}
+
+/**
+ * Интерфейс модели заказа
+ */
+export interface IOrderModel {
+  setAddress(address: string): void;
+  setPayment(payment: string): void;
+  setContacts(email: string, phone: string): void;
+  getOrderData(): IOrderData;
+  validate(): boolean;
+  submit(): Promise<void>;
+  clear(): void;
 }
 
 /* Потенциальный формат ответа API при успешном заказе */
@@ -60,12 +89,6 @@ export interface IRemoveFromBasketCallback {
 /* Интерфейс для данных, передаваемых в колбэк сабмита формы заказа */
 export interface ISubmitOrderCallback {
   (formData: IOrderFormSubmitData): void;
-}
-
-/* Интерфейс, описывающий структуру данных, возвращаемую ProductDetailView.render */
-export interface IProductDetailViewRenderResult {
-  card: HTMLElement;
-  button: HTMLButtonElement;
 }
 
 /* Интерфейс, описывающий структуру данных, возвращаемую BasketView.render */

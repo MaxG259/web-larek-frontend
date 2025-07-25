@@ -1,76 +1,36 @@
-/*
- * Это View-компонент для отображения корзины.
- * Показывает список товаров в корзине, итоговую сумму, кнопку оформления заказа и кнопки удаления товаров.
- * Не хранит данные, только отображает.
+/**
+ * Компонент для отображения корзины товаров
+ * Показывает список товаров в корзине, итоговую сумму и кнопку оформления заказа
  */
 import { IProduct, IRemoveFromBasketCallback } from '../types';
+import { BasketItemView } from './BasketItemView';
+import { cloneTemplate } from '../utils/utils';
 
 export class BasketView {
-  render(products: IProduct[], onRemove: IRemoveFromBasketCallback): HTMLElement {
-    const basket = document.createElement('div');
-    basket.className = 'basket';
-
-    // Заголовок
-    const title = document.createElement('h2');
-    title.className = 'modal__title';
-    title.textContent = 'Корзина';
-    basket.appendChild(title);
-
-    // Список товаров
-    const list = document.createElement('ul');
-    list.className = 'basket__list';
-    let total = 0;
+  /**
+   * Создает и возвращает HTML-элемент корзины с товарами
+   * @param products - список товаров в корзине
+   * @param total - общая сумма товаров
+   * @param onRemove - функция для удаления товара из корзины
+   * @returns HTMLElement - готовый элемент корзины
+   */
+  render(products: IProduct[], total: number, onRemove: IRemoveFromBasketCallback): HTMLElement {
+    // Используем готовый шаблон из HTML
+    const basket = cloneTemplate<HTMLElement>('#basket');
+    
+    const list = basket.querySelector('.basket__list') as HTMLUListElement;
+    const orderBtn = basket.querySelector('.basket__button') as HTMLButtonElement;
+    const priceSpan = basket.querySelector('.basket__price') as HTMLSpanElement;
+    
     products.forEach((product, idx) => {
-      const item = document.createElement('li');
-      item.className = 'basket__item card card_compact';
-
-      // Индекс
-      const index = document.createElement('span');
-      index.className = 'basket__item-index';
-      index.textContent = String(idx + 1);
-      item.appendChild(index);
-
-      // Название
-      const title = document.createElement('span');
-      title.className = 'card__title';
-      title.textContent = product.title;
-      item.appendChild(title);
-
-      // Цена
-      const price = document.createElement('span');
-      price.className = 'card__price';
-      price.textContent = product.price !== null ? `${product.price} синапсов` : 'Нет в наличии';
-      item.appendChild(price);
-      if (product.price) total += product.price;
-
-      // Кнопка удалить
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'basket__item-delete card__button';
-      removeBtn.setAttribute('aria-label', 'удалить');
-      removeBtn.addEventListener('click', () => onRemove(product.id));
-      item.appendChild(removeBtn);
-
+      const itemView = new BasketItemView(product, idx);
+      const item = itemView.render(onRemove);
       list.appendChild(item);
     });
-    basket.appendChild(list);
-
-    // Итоговая сумма и кнопка оформить
-    const actions = document.createElement('div');
-    actions.className = 'modal__actions';
-
-    const orderBtn = document.createElement('button');
-    orderBtn.className = 'button basket__button';
-    orderBtn.textContent = 'Оформить';
+    
     orderBtn.disabled = products.length === 0 || total === 0;
-    actions.appendChild(orderBtn);
-
-    const sum = document.createElement('span');
-    sum.className = 'basket__price';
-    sum.textContent = `${total} синапсов`;
-    actions.appendChild(sum);
-
-    basket.appendChild(actions);
-
+    priceSpan.textContent = `${total} синапсов`;
+    
     return basket;
   }
 } 

@@ -1,19 +1,15 @@
+/**
+ * Модель для управления корзиной товаров
+ * Хранит список товаров в корзине и предоставляет методы для работы с ними
+ */
 import { IProduct } from '../types';
 
-/* Это Modal-компонент */
-/* Хранит список товаров, которые пользователь добавил в корзину */
-/* Позволяет добавлять, удалять, проверять наличие товара в корзине, получать все товары корзины */
-/* Реализовывает “добавить в корзину”, “удалить из корзины” и тд */
-/* Когда пользователь нажимает “В корзину”, товар добавляется сюда */
-
-/**
- * Модель для работы с корзиной
- */
 export class BasketModel {
   protected items: IProduct[] = [];
 
   /**
-   * Добавить товар в корзину
+   * Добавляет товар в корзину
+   * @param product - товар для добавления
    */
   add(product: IProduct): void {
     // Проверяем, есть ли уже такой товар (по id)
@@ -23,24 +19,44 @@ export class BasketModel {
   }
 
   /**
-   * Получить все товары в корзине
+   * Возвращает все товары в корзине
+   * @returns IProduct[] - массив товаров в корзине
    */
   getAll(): IProduct[] {
     return this.items;
   }
 
   /**
-   * Проверить, есть ли товар в корзине
+   * Проверяет, есть ли товар в корзине
+   * @param productId - идентификатор товара
+   * @returns boolean - true если товар есть в корзине
    */
   has(productId: string): boolean {
     return this.items.some(item => item.id === productId);
   }
 
+  /**
+   * Удаляет товар из корзины
+   * @param productId - идентификатор товара для удаления
+   */
   remove(productId: string): void {
     this.items = this.items.filter(item => item.id !== productId);
   }
 
+  /**
+   * Очищает корзину
+   */
   clear(): void {
     this.items = [];
+  }
+
+  /**
+   * Вычисляет общую сумму товаров в корзине
+   * @returns number - общая сумма товаров
+   */
+  getTotal(): number {
+    return this.items.reduce((total, item) => {
+      return total + (item.price || 0);
+    }, 0);
   }
 }

@@ -1,25 +1,11 @@
-/*
- * Это View-компонент для отображения одной карточки товара в списке товаров.
- * Используется на главной странице. Показывает картинку, категорию, название, цену.
- * Не хранит данные, только отображает.
+/**
+ * Компонент для отображения карточки товара в каталоге
+ * Показывает основную информацию о товаре: название, цену, категорию, изображение
  */
 import { IProduct } from '../types';
 import { CDN_URL } from '../utils/constants';
-
-const categoryMap: Record<string, string> = {
-  'софт-скилл': 'soft',
-  'софт-скил': 'soft',
-  'soft': 'soft',
-  'другое': 'other',
-  'other': 'other',
-  'хард-скилл': 'hard',
-  'хард-скил': 'hard',
-  'hard': 'hard',
-  'дополнительно': 'additional',
-  'additional': 'additional',
-  'кнопка': 'button',
-  'button': 'button'
-};
+import { categoryMap } from '../utils/categoryMap';
+import { cloneTemplate } from '../utils/utils';
 
 export class ProductCardView {
   protected product: IProduct;
@@ -28,40 +14,37 @@ export class ProductCardView {
     this.product = product;
   }
 
+  /**
+   * Создает и возвращает HTML-элемент карточки товара
+   * @returns HTMLElement - готовая карточка товара
+   */
   render(): HTMLElement {
-    const card = document.createElement('button');
-    card.className = 'gallery__item card';
-    card.type = 'button';
-    card.dataset.id = this.product.id;
-
-    // Категория товара
+    // Используем утилиту cloneTemplate для правильной работы с шаблоном
+    const card = cloneTemplate<HTMLButtonElement>('#card-catalog');
+    
+    // Находим элементы в клонированном шаблоне
+    const category = card.querySelector('.card__category') as HTMLSpanElement;
+    const title = card.querySelector('.card__title') as HTMLHeadingElement;
+    const image = card.querySelector('.card__image') as HTMLImageElement;
+    const price = card.querySelector('.card__price') as HTMLSpanElement;
+    
+    // Заполняем данными из продукта
     const categoryMod = categoryMap[this.product.category.toLowerCase()] || 'other';
-    const category = document.createElement('span');
     category.className = `card__category card__category_${categoryMod}`;
     category.textContent = this.product.category;
-    card.appendChild(category);
-
-    // Название товара
-    const title = document.createElement('h2');
-    title.className = 'card__title';
+    
     title.textContent = this.product.title;
-    card.appendChild(title);
-
-    // Картинка товара
-    const img = document.createElement('img');
-    img.className = 'card__image';
-    img.src = this.product.image.startsWith('http')
+    
+    image.src = this.product.image.startsWith('http')
       ? this.product.image
       : `${CDN_URL}/${this.product.image}`;
-    img.alt = this.product.title;
-    card.appendChild(img);
-
-    // Цена товара
-    const price = document.createElement('span');
-    price.className = 'card__price';
+    image.alt = this.product.title;
+    
     price.textContent = this.product.price !== null ? `${this.product.price} синапсов` : 'Нет в наличии';
-    card.appendChild(price);
-
+    
+    // Устанавливаем id товара для идентификации
+    card.dataset.id = this.product.id;
+    
     return card;
   }
 }

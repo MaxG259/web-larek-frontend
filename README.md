@@ -1,4 +1,4 @@
-# Web-ларёк
+# Web-ларёк - Интернет-магазин
 
 Интернет-магазин для веб-разработчиков. Здесь можно посмотреть каталог товаров, добавить товары в корзину и оформить заказ.
 
@@ -21,140 +21,156 @@
    npm start
    ```
 
-
-
 ## Архитектура приложения
 
 Архитектура построена по паттерну MVP (Model-View-Presenter):
 
-- **Model (Модель):** хранит и управляет данными (товары, корзина).
+- **Model (Модель):** хранит и управляет данными (товары, корзина, заказы).
 - **View (Представление):** отвечает за отображение данных пользователю (карточки товаров, формы, модальные окна).
 - **Presenter (Презентер):** связывает модель и представление, обрабатывает действия пользователя и обновляет данные.
 
 ## Основные компоненты
 
-### Модели (Model)
+### Model (Модели)
 
-- **ProductModel** — хранит и управляет списком всех товаров (`IProduct[]`), предоставляет методы для получения списка товаров и поиска товара по `id`.
-- **BasketModel** — хранит список товаров (`IProduct[]`), добавленных в корзину. Позволяет добавлять (`add`), удалять (`remove`), очищать (`clear`) корзину, проверять наличие товара (`has`) и получать все товары (`getAll`).
+#### BasketModel
+- **Конструктор**: `new BasketModel()`
+- **Поля**:
+  - `protected items: IProduct[]` - Товары в корзине
+- **Методы**:
+  - `add(product: IProduct): void` - Добавить товар в корзину
+  - `remove(productId: string): void` - Удалить товар из корзины
+  - `clear(): void` - Очистить корзину
+  - `has(productId: string): boolean` - Проверить наличие товара
+  - `getAll(): IProduct[]` - Получить все товары в корзине
+  - `getTotal(): number` - Вычислить общую сумму корзины
 
-### Представления (View)
+#### OrderModel
+- **Конструктор**: `new OrderModel()`
+- **Поля**:
+  - `private orderData: IOrderData` - Данные заказа
+  - `private api: Api` - API клиент
+- **Методы**:
+  - `setAddress(address: string): void` - Установить адрес доставки
+  - `setPayment(payment: string): void` - Установить способ оплаты
+  - `setContacts(email: string, phone: string): void` - Установить контактные данные
+  - `getOrderData(): IOrderData` - Получить данные заказа
+  - `validate(): boolean` - Проверить корректность данных
+  - `submit(): Promise<void>` - Отправить заказ на сервер
+  - `clear(): void` - Очистить данные заказа
 
-- **ProductCardView** — отображает карточку товара для каталога. Принимает `IProduct`, рендерит `HTMLElement` (кнопку).
-- **ProductDetailView** — отображает подробную карточку товара в модальном окне. Принимает `IProduct`, рендерит `HTMLElement` и `HTMLButtonElement`.
-- **BasketView** — отображает содержимое корзины. Принимает массив `IProduct[]` и колбэк `onRemove`, рендерит `HTMLElement`.
-- **OrderFormView** — отображает двухшаговую форму заказа (адрес/оплата -> email/телефон). Принимает колбэк `onSubmit`, рендерит `HTMLElement`.
-- **ModalView** — управляет открытием/закрытием модального окна и вставкой содержимого. Принимает `HTMLElement` или `string` для отображения.
+### View (Представления)
 
-### Презентер
+#### ProductCardView
+- **Конструктор**: `new ProductCardView(product: IProduct)`
+- **Поля**:
+  - `protected product: IProduct` - Товар для отображения
+- **Методы**:
+  - `render(): HTMLElement` - Создать карточку товара для главной страницы
+- **Описание**: Отображает карточку товара в каталоге. Показывает основную информацию: название, цену, категорию, изображение.
 
-- **`src/index.ts`** — основной файл приложения. Управляет состоянием (`'main'`, `'modal-product'`, `'modal-basket'`, `'modal-order'`, `'modal-success'`), создает экземпляры View-компонентов, обрабатывает события (клик по карточке, кнопки в модалках, отправка формы), взаимодействует с API для загрузки товаров и управляет `BasketModel`.
+#### ProductDetailView
+- **Конструктор**: `new ProductDetailView(product: IProduct)`
+- **Поля**:
+  - `protected product: IProduct` - Товар для отображения
+- **Методы**:
+  - `render(inBasket: boolean = false): HTMLElement` - Создать детальную карточку товара
+- **Описание**: Отображает детальную информацию о товаре в модальном окне. Показывает полную информацию: изображение, категорию, название, описание, цену, кнопку покупки.
 
-## Типы данных
+#### BasketView
+- **Конструктор**: `new BasketView()`
+- **Методы**:
+  - `render(products: IProduct[], total: number, onRemove: IRemoveFromBasketCallback): HTMLElement` - Создать представление корзины
+- **Описание**: Отображает список товаров в корзине, итоговую сумму и кнопку оформления заказа.
 
-- **IProduct** — товар (id, название, описание, изображение, категория, цена).
-- **IBasket** — состояние корзины (массив товаров, методы управления).
-- **IOrderFormSubmitData** — данные, передаваемые при сабмите формы заказа.
-- **IOrderResult** — потенциальный формат ответа API при успешном заказе.
-- **TScreenState** — возможные состояния экрана приложения.
-- **ISuccessScreenData** — данные для экрана успешного оформления заказа.
-- **IProductScreenData** — данные для экрана просмотра товара.
-- **IBasketScreenData** — данные для экрана корзины.
-- **IRemoveFromBasketCallback** — тип для колбэка удаления из корзины.
-- **ISubmitOrderCallback** — тип для колбэка сабмита формы заказа.
-- **IProductDetailViewRenderResult** — структура результата рендера `ProductDetailView`.
-- **IBasketViewRenderResult** — структура результата рендера `BasketView`.
-- **IOrderFormViewRenderResult** — структура результата рендера `OrderFormView`.
+#### BasketItemView
+- **Конструктор**: `new BasketItemView(product: IProduct, index: number)`
+- **Поля**:
+  - `private product: IProduct` - Товар для отображения
+  - `private index: number` - Номер товара в корзине
+- **Методы**:
+  - `render(onRemove: (id: string) => void): HTMLElement` - Создать элемент товара в корзине
+- **Описание**: Отображает один товар в корзине. Показывает название, цену, номер товара и кнопку удаления.
 
----
-# Описание классов и интерфейсов
+#### OrderFormView
+- **Конструктор**: `new OrderFormView()`
+- **Методы**:
+  - `render(onSubmit: (formData: IOrderFormSubmitData) => void): HTMLElement` - Создать форму заказа
+- **Описание**: Отображает форму оформления заказа. Показывает способ оплаты и поле для ввода адреса доставки.
 
-## ProductModel
+#### ContactsFormView
+- **Конструктор**: `new ContactsFormView()`
+- **Методы**:
+  - `render(onSubmit: (formData: IContactsFormSubmitData) => void): HTMLElement` - Создать форму контактов
+- **Описание**: Отображает форму ввода контактных данных. Показывает поля для ввода email и телефона с валидацией.
 
-**Конструктор:**
-`constructor(products: IProduct[])`
+#### PageView
+- **Конструктор**: `new PageView()`
+- **Поля**:
+  - `private gallery: HTMLElement` - Контейнер для товаров
+  - `private products: IProduct[]` - Список товаров
+- **Методы**:
+  - `render(products: IProduct[]): void` - Отобразить список товаров
+  - `addCardClickHandler(handler: (product: IProduct) => void): void` - Добавить обработчик клика на карточки
+  - `private findProductById(id: string): IProduct | null` - Найти товар по id
+- **Описание**: Управляет отображением главной страницы с каталогом товаров и обработкой кликов по карточкам.
 
-**Поля:**
-- `protected products: IProduct[]` — список всех товаров
+#### HeaderView
+- **Конструктор**: `new HeaderView()`
+- **Поля**:
+  - `private basketButton: HTMLElement` - Кнопка корзины
+  - `private basketCounter: HTMLElement` - Счетчик товаров
+- **Методы**:
+  - `setBasketCount(count: number): void` - Установить количество товаров в корзине
+  - `addBasketClickHandler(handler: () => void): void` - Добавить обработчик клика на кнопку корзины
+  - `toggleBasketCounter(show: boolean): void` - Показать/скрыть счетчик товаров
+- **Описание**: Управляет хедером страницы. Отвечает за отображение кнопки корзины и счетчика товаров.
 
-**Методы:**
-- `getAll(): IProduct[]` — получить все товары
-- `getProductById(id: string): IProduct | undefined` — получить товар по id
+#### ModalView
+- **Конструктор**: `new ModalView()`
+- **Поля**:
+  - `private modal: HTMLElement` - Элемент модального окна
+  - `private modalContent: HTMLElement` - Контейнер содержимого
+  - `private modalClose: HTMLElement` - Кнопка закрытия
+- **Методы**:
+  - `open(): void` - Открыть модальное окно
+  - `close(): void` - Закрыть модальное окно
+  - `clearContent(): void` - Очистить содержимое
+  - `setContent(content: HTMLElement): void` - Установить содержимое
+  - `isOpen(): boolean` - Проверить, открыто ли окно
+  - `private setupEventListeners(): void` - Настроить обработчики событий
+- **Описание**: Управляет модальным окном. Отвечает за открытие, закрытие и управление содержимым модального окна.
 
----
+### Presenter (Презентер)
 
-## BasketModel
+#### index.ts (Главный презентер)
+- **Функции**:
+  - `setScreen(state: TScreenState): void` - Управляет переключением между экранами
+  - `loadProducts(): Promise<void>` - Загружает товары с сервера
+  - `displayProducts(products: IProduct[]): void` - Отображает список товаров
+- **Описание**: Главный файл приложения, который связывает все компоненты. Управляет состоянием экранов, обработкой событий и взаимодействием между моделями и представлениями.
 
-**Конструктор:**
-`constructor()`
+## Принципы архитектуры
 
-**Поля:**
-- `protected items: IProduct[]` — массив товаров в корзине
+### 1. Разделение ответственности
+- **Model** - только данные и бизнес-логика
+- **View** - только отображение
+- **Presenter** - только управление взаимодействием
 
-**Методы:**
-- `add(product: IProduct): void` — добавить товар в корзину
-- `remove(productId: string): void` — удалить товар из корзины по id
-- `clear(): void` — очистить корзину
-- `getAll(): IProduct[]` — получить все товары в корзине
-- `has(productId: string): boolean` — проверить, есть ли товар в корзине по id
+### 2. Использование HTML шаблонов
+Все View компоненты используют HTML шаблоны из файла `index.html` через функцию `cloneTemplate()`, а не создают элементы в коде.
 
----
+### 3. Типизация
+Все компоненты используют TypeScript интерфейсы для обеспечения типобезопасности.
 
-## ProductCardView
+### 4. События
+Обработка событий происходит в Presenter, который обновляет Model и View соответственно.
 
-**Конструктор:**
-`constructor(product: IProduct)`
-
-**Поля:**
-- `protected product: IProduct` — товар для отображения
-
-**Методы:**
-- `render(): HTMLElement` — отрисовать карточку товара (возвращает кнопку)
-
----
-
-## ProductDetailView
-
-**Конструктор:**
-`constructor(product: IProduct)`
-
-**Поля:**
-- `protected product: IProduct` — товар для отображения
-
-**Методы:**
-- `render(inBasket: boolean = false): IProductDetailViewRenderResult` — отрисовать подробную карточку товара, возвращает объект с элементом карточки и кнопкой
-
----
-
-## BasketView
-
-**Конструктор:**
-`constructor()`
-
-**Методы:**
-- `render(products: IProduct[], onRemove: IRemoveFromBasketCallback): HTMLElement` — отрисовать содержимое корзины
-
----
-
-## OrderFormView
-
-**Конструктор:**
-`constructor()`
-
-**Методы:**
-- `render(onSubmit: ISubmitOrderCallback): HTMLElement` — отрисовать форму заказа
-
----
-
-## ModalView
-
-**Конструктор:**
-`constructor()`
-
-**Поля:**
-- `protected modalElement: HTMLElement` — корневой элемент модального окна
-- `protected contentElement: HTMLElement` — элемент для вставки содержимого
-
-**Методы:**
-- `open(content: HTMLElement | string): void` — открыть модальное окно с содержимым
-- `close(): void` — закрыть модальное окно
+### 5. Управление состоянием экранов
+Приложение использует централизованную функцию `setScreen()` для переключения между различными состояниями:
+- `'main'` - главная страница с каталогом товаров
+- `'modal-product'` - модальное окно с деталями товара
+- `'modal-basket'` - модальное окно корзины
+- `'modal-order'` - модальное окно оформления заказа
+- `'modal-contacts'` - модальное окно ввода контактов
+- `'modal-success'` - модальное окно успешного заказа
