@@ -1,25 +1,33 @@
+/**
+ * Модель для управления списком товаров
+ * Хранит все товары и предоставляет методы для работы с ними
+ */
 import { IProduct } from '../types';
 
-/* Это Modal-компонент */
-/* Хранит и управляет списком всех товаров, которые есть в магазине */
-/* Позволяет получить список всех товаров или найти товар по id */
-/* Когда приложение загружает товары с сервера, они сохраняются здесь */
-/* Когда нужно отобразить товары — View запрашивает их отсюда */
-
-/* Модель для работы со списком товаров */
 export class ProductModel {
-  protected products: IProduct[];
+  private products: IProduct[] = [];
 
-  constructor(products: IProduct[]) {
+  /**
+   * Устанавливает список товаров
+   * @param products - массив товаров
+   */
+  setProducts(products: IProduct[]): void {
     this.products = products;
   }
 
-  /* Получить все товары */
+  /**
+   * Возвращает все товары
+   * @returns IProduct[] - массив всех товаров
+   */
   getAll(): IProduct[] {
     return this.products;
   }
 
-  /* Найти товар по id */
+  /**
+   * Находит товар по id
+   * @param id - идентификатор товара
+   * @returns IProduct | undefined - найденный товар или undefined
+   */
   getProductById(id: string): IProduct | undefined {
     return this.products.find(product => product.id === id);
   }

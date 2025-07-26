@@ -20,9 +20,6 @@ export class OrderFormView {
     const nextBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
     const errorsSpan = form.querySelector('.form__errors') as HTMLSpanElement;
     
-    // Убираем disabled атрибут и CSS классы с кнопки Далее
-    nextBtn.removeAttribute('disabled');
-    nextBtn.classList.remove('disabled', 'button_disabled');
     // Изменяем тип кнопки с submit на button
     nextBtn.type = 'button';
     
@@ -59,6 +56,8 @@ export class OrderFormView {
       
       onSubmit(formData);
     });
+
+    checkValidity();
     
     return form;
   }

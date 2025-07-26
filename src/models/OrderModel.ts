@@ -4,7 +4,6 @@
  */
 import { IOrderModel, IOrderData } from '../types';
 import { Api } from '../components/base/api';
-import { API_URL } from '../utils/constants';
 
 export class OrderModel implements IOrderModel {
   private api: Api;
@@ -15,8 +14,8 @@ export class OrderModel implements IOrderModel {
     phone: undefined
   };
 
-  constructor() {
-    this.api = new Api(API_URL);
+  constructor(api: Api) {
+    this.api = api;
   }
 
   /**
@@ -33,6 +32,26 @@ export class OrderModel implements IOrderModel {
    */
   setPayment(payment: string): void {
     this.orderData.payment = payment;
+  }
+
+  /**
+   * Устанавливает email и валидирует его
+   * @param email - email покупателя
+   * @returns boolean - результат валидации email
+   */
+  setEmail(email: string): boolean {
+    this.orderData.email = email;
+    return this.validateEmail(email);
+  }
+
+  /**
+   * Устанавливает телефон и валидирует его
+   * @param phone - телефон покупателя
+   * @returns boolean - результат валидации телефона
+   */
+  setPhone(phone: string): boolean {
+    this.orderData.phone = phone;
+    return this.validatePhone(phone);
   }
 
   /**
@@ -64,6 +83,45 @@ export class OrderModel implements IOrderModel {
       this.orderData.email &&
       this.orderData.phone
     );
+  }
+
+  /**
+   * Валидирует email
+   * @param email - email для валидации
+   * @returns boolean - true если email валиден
+   */
+  validateEmail(email: string): boolean {
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  }
+
+  /**
+   * Валидирует телефон
+   * @param phone - телефон для валидации
+   * @returns boolean - true если телефон валиден
+   */
+  validatePhone(phone: string): boolean {
+    return /^\+7\s?\d{3}[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}$/.test(phone) || /^\+7\d{10}$/.test(phone);
+  }
+
+  /**
+   * Проверяет валидность контактных данных
+   * @returns { isValid: boolean, errors: string[] } - результат валидации
+   */
+  validateContacts(): { isValid: boolean, errors: string[] } {
+    const errors: string[] = [];
+    
+    if (!this.orderData.email || !this.validateEmail(this.orderData.email)) {
+      errors.push('Введите корректный email');
+    }
+    
+    if (!this.orderData.phone || !this.validatePhone(this.orderData.phone)) {
+      errors.push('Введите корректный телефон');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   }
 
   /**

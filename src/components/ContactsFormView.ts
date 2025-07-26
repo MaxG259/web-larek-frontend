@@ -1,11 +1,16 @@
 /**
  * Компонент для отображения формы ввода контактных данных
- * Показывает поля для ввода email и телефона с валидацией
+ * Показывает поля для ввода email и телефона
  */
 import { IContactsFormSubmitData } from '../types';
 import { cloneTemplate } from '../utils/utils';
 
 export class ContactsFormView {
+  private emailInput: HTMLInputElement;
+  private phoneInput: HTMLInputElement;
+  private submitBtn: HTMLButtonElement;
+  private errorsSpan: HTMLSpanElement;
+
   /**
    * Создает и возвращает HTML-элемент формы контактов
    * @param onSubmit - функция, вызываемая при отправке формы
@@ -14,55 +19,81 @@ export class ContactsFormView {
   render(onSubmit: (formData: IContactsFormSubmitData) => void): HTMLElement {
     const form = cloneTemplate<HTMLFormElement>('#contacts');
     
-    const emailInput = form.querySelector('input[name="email"]') as HTMLInputElement;
-    const phoneInput = form.querySelector('input[name="phone"]') as HTMLInputElement;
-    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    const errorsSpan = form.querySelector('.form__errors') as HTMLSpanElement;
+    this.emailInput = form.querySelector('input[name="email"]') as HTMLInputElement;
+    this.phoneInput = form.querySelector('input[name="phone"]') as HTMLInputElement;
+    this.submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    this.errorsSpan = form.querySelector('.form__errors') as HTMLSpanElement;
     
-    // Убираем disabled атрибут и CSS классы с кнопки Оплатить
-    submitBtn.removeAttribute('disabled');
-    submitBtn.classList.remove('disabled', 'button_disabled');
     // Изменяем тип кнопки с submit на button
-    submitBtn.type = 'button';
+    this.submitBtn.type = 'button';
     
-    function validateEmail(value: string): boolean {
-      return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
-    }
+    // Настраиваем обработчики событий
+    this.setupEventListeners(onSubmit);
     
-    function validatePhone(value: string): boolean {
-      return /^\+7\s?\d{3}[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}$/.test(value) || /^\+7\d{10}$/.test(value);
-    }
+    // Сразу делаем кнопку неактивной при создании формы
+    this.setButtonState(false);
     
-    function checkValidity() {
-      const emailValid = validateEmail(emailInput.value);
-      const phoneValid = validatePhone(phoneInput.value);
-      
-      submitBtn.disabled = !emailValid || !phoneValid;
-      
-      if (!emailValid || !phoneValid) {
-        const errors = [];
-        if (!emailValid) errors.push('Введите корректный email');
-        if (!phoneValid) errors.push('Введите корректный телефон');
-        errorsSpan.textContent = errors.join(', ');
-      } else {
-        errorsSpan.textContent = '';
-      }
-    }
-    
-    emailInput.addEventListener('input', checkValidity);
-    phoneInput.addEventListener('input', checkValidity);
-    
-    submitBtn.addEventListener('click', () => {
-      if (submitBtn.disabled) return;
+    return form;
+  }
+
+  /**
+   * Настраивает обработчики событий для полей формы
+   */
+  private setupEventListeners(onSubmit: (formData: IContactsFormSubmitData) => void): void {
+    // Обработчики для изменения полей - отправляем события в презентер
+    this.emailInput.addEventListener('input', () => {
+      this.emit('emailChanged', this.emailInput.value);
+    });
+
+    this.phoneInput.addEventListener('input', () => {
+      this.emit('phoneChanged', this.phoneInput.value);
+    });
+
+    // Обработчик для кнопки отправки
+    this.submitBtn.addEventListener('click', () => {
+      if (this.submitBtn.disabled) return;
       
       const formData: IContactsFormSubmitData = {
-        email: emailInput.value.trim(),
-        phone: phoneInput.value.trim()
+        email: this.emailInput.value.trim(),
+        phone: this.phoneInput.value.trim()
       };
       
       onSubmit(formData);
     });
-    
-    return form;
+  }
+
+  /**
+   * Устанавливает состояние кнопки отправки
+   * @param isValid - валидны ли данные формы
+   */
+  setButtonState(isValid: boolean): void {
+    this.submitBtn.disabled = !isValid;
+  }
+
+  /**
+   * Устанавливает ошибки валидации
+   * @param errors - массив ошибок
+   */
+  setErrors(errors: string[]): void {
+    this.errorsSpan.textContent = errors.join(', ');
+  }
+
+  /**
+   * Очищает ошибки валидации
+   */
+  clearErrors(): void {
+    this.errorsSpan.textContent = '';
+  }
+
+  /**
+   * Отправляет событие (заглушка для простоты)
+   * В реальном проекте здесь был бы EventEmitter
+   */
+  private emit(event: string, data: any): void {
+    // В реальном проекте здесь был бы EventEmitter
+    // Пока просто вызываем глобальную функцию
+    if (window.contactsFormEvents) {
+      window.contactsFormEvents(event, data);
+    }
   }
 } 

@@ -8,17 +8,12 @@ import { categoryMap } from '../utils/categoryMap';
 import { cloneTemplate } from '../utils/utils';
 
 export class ProductCardView {
-  protected product: IProduct;
-
-  constructor(product: IProduct) {
-    this.product = product;
-  }
-
   /**
    * Создает и возвращает HTML-элемент карточки товара
+   * @param product - товар для отображения
    * @returns HTMLElement - готовая карточка товара
    */
-  render(): HTMLElement {
+  render(product: IProduct): HTMLElement {
     // Используем утилиту cloneTemplate для правильной работы с шаблоном
     const card = cloneTemplate<HTMLButtonElement>('#card-catalog');
     
@@ -29,21 +24,21 @@ export class ProductCardView {
     const price = card.querySelector('.card__price') as HTMLSpanElement;
     
     // Заполняем данными из продукта
-    const categoryMod = categoryMap[this.product.category.toLowerCase()] || 'other';
+    const categoryMod = categoryMap[product.category.toLowerCase()] || 'other';
     category.className = `card__category card__category_${categoryMod}`;
-    category.textContent = this.product.category;
+    category.textContent = product.category;
     
-    title.textContent = this.product.title;
+    title.textContent = product.title;
     
-    image.src = this.product.image.startsWith('http')
-      ? this.product.image
-      : `${CDN_URL}/${this.product.image}`;
-    image.alt = this.product.title;
+    image.src = product.image.startsWith('http')
+      ? product.image
+      : `${CDN_URL}/${product.image}`;
+    image.alt = product.title;
     
-    price.textContent = this.product.price !== null ? `${this.product.price} синапсов` : 'Нет в наличии';
+    price.textContent = product.price !== null ? `${product.price} синапсов` : 'Нет в наличии';
     
     // Устанавливаем id товара для идентификации
-    card.dataset.id = this.product.id;
+    card.dataset.id = product.id;
     
     return card;
   }

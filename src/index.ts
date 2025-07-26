@@ -12,18 +12,29 @@ import { ContactsFormView } from './components/ContactsFormView';
 import { PageView } from './components/PageView';
 import { ModalView } from './components/ModalView';
 import { HeaderView } from './components/HeaderView';
+import { BasketItemView } from './components/BasketItemView';
+import { ProductModel } from './models/ProductModel';
 
 // Создаём API клиент
 const api = new Api(API_URL);
 
+// Инициализируем модели и представления
 const basketModel = new BasketModel();
-const orderModel = new OrderModel();
+const orderModel = new OrderModel(api);
+const productModel = new ProductModel();
 const basketView = new BasketView();
 const pageView = new PageView();
 const modalView = new ModalView();
 const headerView = new HeaderView();
 
-type ScreenState = 'main' | 'modal-product' | 'modal-basket' | 'modal-order' | 'modal-success';
+// Добавляем типы для глобальных событий
+declare global {
+  interface Window {
+    contactsFormEvents?: (event: string, data: any) => void;
+  }
+}
+
+type ScreenState = 'main' | 'modal-product' | 'modal-basket' | 'modal-order' | 'modal-contacts' | 'modal-success';
 
 function setScreen(state: ScreenState, data?: any) {
   modalView.close();
@@ -67,12 +78,24 @@ function setScreen(state: ScreenState, data?: any) {
     case 'modal-basket': {
       const products = basketModel.getAll();
       const total = basketModel.getTotal();
-      // Тип onRemove теперь определяется через IRemoveFromBasketCallback (внутри BasketView)
-      const basketElement = basketView.render(products, total, (id) => {
+      
+      // Создаем элементы товаров в презентере
+      const basketItemView = new BasketItemView();
+      const basketItems = products.map((product, idx) => {
+        return basketItemView.render(product, idx, (id) => {
+          basketModel.remove(id);
+          updateBasketCount(); // Обновляем счетчик
+          setScreen('modal-basket');
+        });
+      });
+      
+      // Передаем готовые HTML элементы в BasketView
+      const basketElement = basketView.render(products, total, basketItems, (id) => {
         basketModel.remove(id);
         updateBasketCount(); // Обновляем счетчик
         setScreen('modal-basket');
       });
+      
       // Находим кнопку оформления заказа
       const orderBtn = basketElement.querySelector('.basket__button');
       if (orderBtn) {
@@ -90,26 +113,55 @@ function setScreen(state: ScreenState, data?: any) {
         // Сохраняем данные заказа в модель
         orderModel.setAddress(formData.address);
         orderModel.setPayment(formData.payment);
-        
-        // При любом способе оплаты показываем форму контактов
-        const contactsFormView = new ContactsFormView();
-        const contactsForm = contactsFormView.render((contactsData) => {
-          // Сохраняем контакты в модель
-          orderModel.setContacts(contactsData.email, contactsData.phone);
-          
-          // Получаем тотал из корзины (единственное место для подсчета)
-          const total = basketModel.getTotal();
-          
-          // Очищаем корзину и заказ
-          basketModel.clear();
-          orderModel.clear();
-          updateBasketCount(); // Обновляем счетчик
-          
-          setScreen('modal-success', { message: 'Заказ оформлен', total });
-        });
-        modalView.setContent(contactsForm);
+        // Переходим к следующему шагу через setScreen
+        setScreen('modal-contacts');
       });
       modalView.setContent(orderForm);
+      modalView.open();
+      break;
+    }
+    case 'modal-contacts': {
+      const contactsFormView = new ContactsFormView();
+      const contactsForm = contactsFormView.render((contactsData) => {
+        // Сохраняем контакты в модель
+        orderModel.setContacts(contactsData.email, contactsData.phone);
+        // Получаем тотал из корзины
+        const total = basketModel.getTotal();
+        // Очищаем корзину и заказ
+        basketModel.clear();
+        orderModel.clear();
+        updateBasketCount();
+        setScreen('modal-success', { message: 'Заказ оформлен', total });
+      });
+
+      // Настраиваем обработчики событий от формы контактов
+      window.contactsFormEvents = (event: string, data: any) => {
+        switch (event) {
+          case 'emailChanged':
+            const emailValid = orderModel.setEmail(data);
+            const emailValidation = orderModel.validateContacts();
+            contactsFormView.setButtonState(emailValidation.isValid);
+            if (emailValidation.errors.length > 0) {
+              contactsFormView.setErrors(emailValidation.errors);
+            } else {
+              contactsFormView.clearErrors();
+            }
+            break;
+          
+          case 'phoneChanged':
+            const phoneValid = orderModel.setPhone(data);
+            const phoneValidation = orderModel.validateContacts();
+            contactsFormView.setButtonState(phoneValidation.isValid);
+            if (phoneValidation.errors.length > 0) {
+              contactsFormView.setErrors(phoneValidation.errors);
+            } else {
+              contactsFormView.clearErrors();
+            }
+            break;
+        }
+      };
+
+      modalView.setContent(contactsForm);
       modalView.open();
       break;
     }
@@ -150,12 +202,25 @@ function updateBasketCount(): void {
 
 // Функция для отображения всех товаров
 function displayProducts(products: IProduct[]): void {
-  // Используем PageView вместо прямой работы с DOM
-  pageView.render(products);
+  // Сохраняем товары в модель
+  productModel.setProducts(products);
+  
+  // Создаем карточки товаров в презентере
+  const productCardView = new ProductCardView();
+  const cardElements = products.map(product => {
+    return productCardView.render(product);
+  });
+  
+  // Передаем готовые HTML элементы в PageView
+  pageView.render(products, cardElements);
   
   // Добавляем обработчик клика на карточки
-  pageView.addCardClickHandler((product: IProduct) => {
-    setScreen('modal-product', { product });
+  pageView.addCardClickHandler((productId: string) => {
+    // Ищем товар в модели
+    const product = productModel.getProductById(productId);
+    if (product) {
+      setScreen('modal-product', { product });
+    }
   });
 }
 
