@@ -14,21 +14,17 @@ export interface IBasket {
   add(product: IProduct): void;
   remove(productId: string): void;
   clear(): void;
-  getAll(): IProduct[]; // Добавлен метод получения всех товаров
-  has(productId: string): boolean; // Добавлен метод проверки наличия товара
+  getAll(): IProduct[];
+  has(productId: string): boolean;
 }
 
-/** 
- * Интерфейс для данных формы заказа
- */
+/* Интерфейс для данных формы заказа */
 export interface IOrderFormSubmitData {
   address: string;
   payment: string;
 }
 
-/** 
- * Интерфейс для данных формы контактов
- */
+/* Интерфейс для данных формы контактов */
 export interface IContactsFormSubmitData {
   email: string;
   phone: string;
@@ -42,9 +38,7 @@ export interface IOrderData {
   phone?: string;
 }
 
-/**
- * Интерфейс модели заказа
- */
+/* Интерфейс модели заказа */
 export interface IOrderModel {
   setAddress(address: string): void;
   setPayment(payment: string): void;

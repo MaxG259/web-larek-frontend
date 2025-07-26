@@ -24,7 +24,7 @@ export class ContactsFormView {
     this.submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
     this.errorsSpan = form.querySelector('.form__errors') as HTMLSpanElement;
     
-    // Изменяем тип кнопки с submit на button
+    // Изменил тип кнопки с submit на button
     this.submitBtn.type = 'button';
     
     // Настраиваем обработчики событий
@@ -87,10 +87,8 @@ export class ContactsFormView {
 
   /**
    * Отправляет событие (заглушка для простоты)
-   * В реальном проекте здесь был бы EventEmitter
    */
   private emit(event: string, data: any): void {
-    // В реальном проекте здесь был бы EventEmitter
     // Пока просто вызываем глобальную функцию
     if (window.contactsFormEvents) {
       window.contactsFormEvents(event, data);

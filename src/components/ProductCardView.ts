@@ -14,7 +14,7 @@ export class ProductCardView {
    * @returns HTMLElement - готовая карточка товара
    */
   render(product: IProduct): HTMLElement {
-    // Используем утилиту cloneTemplate для правильной работы с шаблоном
+    // Используем cloneTemplate для правильной работы с шаблоном
     const card = cloneTemplate<HTMLButtonElement>('#card-catalog');
     
     // Находим элементы в клонированном шаблоне
